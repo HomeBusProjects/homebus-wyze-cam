@@ -1,0 +1,20 @@
+[Unit]
+Description=HomeBus Wyze camera publisher
+After=network.target
+
+[Service]
+Type=simple
+
+User=homebus
+WorkingDirectory=/home/homebus/homebus-wyze-cam
+
+ExecStart=/home/homebus/.rbenv/bin/rbenv exec bundle exec homebus-wyze-cam.rb
+TimeoutSec=30
+
+Restart=always
+RestartSec=90
+StartLimitInterval=400
+StartLimitBurst=3
+
+[Install]
+WantedBy=multi-user.target
