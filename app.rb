@@ -9,6 +9,8 @@ require 'base64'
 require 'timeout'
 
 class CameraHomeBusApp < HomeBusApp
+  DDC = 'org.homebus.experimental.image'
+
   def initialize(options)
     @options = options
 
@@ -21,11 +23,10 @@ class CameraHomeBusApp < HomeBusApp
     @url = ENV['CAMERA_URL']
   end
 
-  def get_image
+  def _get_image
     begin
       response = Timeout::timeout(30) do
         uri = URI(@url)
-        #        response = Net::HTTP.get_response(uri)
         req = Net::HTTP::Get.new(uri.path)
         req.basic_auth ENV['CAMERA_USERNAME'], ENV['CAMERA_PASSWORD']
         response = Net::HTTP.start(uri.host,
@@ -37,8 +38,6 @@ class CameraHomeBusApp < HomeBusApp
       end
 
       if response.code == "200"
-        File.open('photo.jpg', 'w') do |f| f.write(response.body) end
-
         return {
           mime_type: 'image/jpeg',
           data: Base64.encode64(response.body)
@@ -53,19 +52,17 @@ class CameraHomeBusApp < HomeBusApp
   end
 
   def work!
-    image = get_image
+    image = _get_image
 
     if image
       obj = {
         id: @uuid,
-        timestamp: Time.now.to_i,
-        image: image
+        timestamp: Time.now.to_i
       }
 
-      @mqtt.publish '/homebus/device/' + @uuid,
-                    JSON.generate(obj),
-                    true
+      obj[DDC] = image
 
+      publish! DDC, obj
     else
       puts "no image"
     end
@@ -105,7 +102,7 @@ class CameraHomeBusApp < HomeBusApp
         index: 0,
         accuracy: 0,
         precision: 0,
-        wo_topics: [ '/cameras' ],
+        wo_topics: [ DDC ],
         ro_topics: [],
         rw_topics: []
       }
