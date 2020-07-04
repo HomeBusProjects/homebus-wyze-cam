@@ -55,14 +55,7 @@ class CameraHomeBusApp < HomeBusApp
     image = _get_image
 
     if image
-      obj = {
-        id: @uuid,
-        timestamp: Time.now.to_i
-      }
-
-      obj[DDC] = image
-
-      publish! DDC, obj
+      publish! DDC, image
     else
       puts "no image"
     end
