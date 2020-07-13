@@ -38,6 +38,8 @@ class CameraHomeBusApp < HomeBusApp
       end
 
       if response.code == "200"
+        return nil if response.body == ''
+
         return {
           mime_type: 'image/jpeg',
           data: Base64.encode64(response.body)
